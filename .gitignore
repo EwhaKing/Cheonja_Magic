@@ -73,3 +73,8 @@ Plugins/**/Intermediate/*
 
 # Cache files for the editor to use
 DerivedDataCache/*
+
+Cheonja_Magic/Saved/
+Cheonja_Magic/Intermediate/
+Cheonja_Magic/DerivedDataCache/
+Cheonja_Magic/Binaries/
