@@ -63,6 +63,39 @@ FGestureResult UDollarGestureRecognizer::RecognizeGesture(const TArray<FVector2D
 	return Result;
 }
 
+float UDollarGestureRecognizer::ScoreAgainstTemplate(const TArray<FVector2D>& RawPoints, const FString& TemplateName) const
+{
+	if (RawPoints.Num() < 2)
+	{
+		return 0.0f;
+	}
+
+	const TArray<FVector2D> Candidate = Normalize(RawPoints);
+
+	const float ThetaA = FMath::DegreesToRadians(AngleSearchRange);
+	const float ThetaDelta = FMath::DegreesToRadians(AngleSearchPrecision);
+	const float HalfDiagonal = 0.5f * FMath::Sqrt(SquareSize * SquareSize + SquareSize * SquareSize);
+
+	float BestScore = 0.0f;
+	bool bFoundAny = false;
+
+	for (const FGestureTemplate& Template : Templates)
+	{
+		if (Template.Name != TemplateName)
+		{
+			continue;
+		}
+
+		bFoundAny = true;
+		const float Distance = DistanceAtBestAngle(Candidate, Template.Points, -ThetaA, ThetaA, ThetaDelta);
+		const float Score = FMath::Clamp(1.0f - (Distance / HalfDiagonal), 0.0f, 1.0f);
+		BestScore = FMath::Max(BestScore, Score);
+	}
+
+	return bFoundAny ? BestScore : 0.0f;
+}
+
+
 TArray<FVector2D> UDollarGestureRecognizer::ProjectStrokeToViewPlane(const TArray<FVector>& WorldPoints, const FVector& ViewLocation, const FVector& ViewForward, const FVector& ViewRight, const FVector& ViewUp)
 {
 	TArray<FVector2D> Projected;

@@ -77,6 +77,7 @@ public:
 	 * MinScoreThreshold.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Gesture Recognition")
+	float ScoreAgainstTemplate(const TArray<FVector2D>& RawPoints, const FString& TemplateName) const;
 	FGestureResult RecognizeGesture(const TArray<FVector2D>& RawPoints, float MinScoreThreshold = 0.75f);
 
 	/**
