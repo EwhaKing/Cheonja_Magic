@@ -98,17 +98,19 @@ public:
 	 * Blueprint (e.g. DrawnStrokeSequence). OutScore is the best score found.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Gesture Recognition")
-	int32 IdentifyStroke(const TArray<FVector2D>& RawStrokePoints, float& OutScore, float MinScoreThreshold = 0.6f) const;
+	int32 IdentifyStroke(const TArray<FVector2D>& RawStrokePoints, float& OutScore, float MinScoreThreshold = 0.6f);
 
 	/**
 	 * Checks whether a recorded sequence of stroke indices (e.g. your
-	 * DrawnStrokeSequence array, built up over several IA_Draw calls) exactly
-	 * matches the required order for this character: [0, 1, 2, 3]. Call this
-	 * on IA_Cast. Both length and order must match exactly.
+	 * DrawnStrokeSequence array, built up over several IA_Draw calls)
+	 * contains each required stroke (0 through TotalStrokes-1) exactly once,
+	 * REGARDLESS of the order they were drawn in. Call this on IA_Cast.
+	 * (Order tracking itself isn't removed - DrawnStrokeSequence still
+	 * records the order you drew things in, this function just no longer
+	 * cares about it. Useful later if you want order-sensitive variants.)
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Gesture Recognition")
-	bool CheckDrawnSequence(const TArray<int32>& DrawnIndices) const;
-
+	bool CheckDrawnSequence(const TArray<int32>& DrawnIndices);
 
 private:
 	UPROPERTY()

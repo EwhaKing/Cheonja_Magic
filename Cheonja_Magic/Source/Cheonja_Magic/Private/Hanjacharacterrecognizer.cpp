@@ -62,7 +62,7 @@ FCastProgressResult UHanjaCharacterRecognizer::SubmitStroke(const TArray<FVector
 	return Result;
 }
 
-int32 UHanjaCharacterRecognizer::IdentifyStroke(const TArray<FVector2D>& RawStrokePoints, float& OutScore, float MinScoreThreshold) const
+int32 UHanjaCharacterRecognizer::IdentifyStroke(const TArray<FVector2D>& RawStrokePoints, float& OutScore, float MinScoreThreshold)
 {
 	OutScore = 0.0f;
 
@@ -90,19 +90,27 @@ int32 UHanjaCharacterRecognizer::IdentifyStroke(const TArray<FVector2D>& RawStro
 	return (BestScore >= MinScoreThreshold) ? BestIndex : -1;
 }
 
-bool UHanjaCharacterRecognizer::CheckDrawnSequence(const TArray<int32>& DrawnIndices) const
+bool UHanjaCharacterRecognizer::CheckDrawnSequence(const TArray<int32>& DrawnIndices)
 {
 	if (DrawnIndices.Num() != TotalStrokes)
 	{
 		return false;
 	}
 
-	for (int32 i = 0; i < TotalStrokes; ++i)
+	// Order no longer matters - just confirm every required stroke (0..TotalStrokes-1)
+	// appears exactly once, in any order.
+	TArray<bool> Seen;
+	Seen.Init(false, TotalStrokes);
+
+	for (int32 Index : DrawnIndices)
 	{
-		if (DrawnIndices[i] != i)
+		if (Index < 0 || Index >= TotalStrokes || Seen[Index])
 		{
+			// Out of range, or this stroke was already recorded once (a
+			// duplicate) - either way, not a valid complete set.
 			return false;
 		}
+		Seen[Index] = true;
 	}
 
 	return true;
@@ -152,4 +160,3 @@ void UHanjaCharacterRecognizer::BuildWaterStrokeTemplates()
 	Stroke3.Add(FVector2D(88, 92));
 	StrokeMatcher->AddGesture(TEXT("Water_Stroke3"), Stroke3);
 }
-
