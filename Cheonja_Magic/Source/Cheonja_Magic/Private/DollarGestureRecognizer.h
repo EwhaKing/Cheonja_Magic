@@ -110,6 +110,6 @@ private:
 
 	static constexpr int32 NumResamplePoints = 64;
 	static constexpr float SquareSize = 250.0f;
-	static constexpr float AngleSearchRange = 45.0f;  // degrees, +/-
+	static constexpr float AngleSearchRange = 10.0f;  // degrees, +/-
 	static constexpr float AngleSearchPrecision = 2.0f; // degrees
 };

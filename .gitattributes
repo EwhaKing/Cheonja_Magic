@@ -1,3 +1,5 @@
 version https://git-lfs.github.com/spec/v1
 oid sha256:fad6d80ce550b05487c4a20c3d37398335fb0fd0b23ba130bd3e97b5a159cf9b
 size 95
+*.uasset filter=lfs diff=lfs merge=lfs -text
+*.umap filter=lfs diff=lfs merge=lfs -text
