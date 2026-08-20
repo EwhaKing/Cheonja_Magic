@@ -4,7 +4,7 @@
 
 // ---------- Public API ----------
 
-void UDollarGestureRecognizer::AddGesture(const FString& GestureName, const TArray<FVector2D>& RawPoints)
+void UDollarGestureRecognizer::AddGesture(const FString& GestureName, const TArray<FVector2D>& RawPoints, bool bApplyIndicativeRotation)
 {
 	if (RawPoints.Num() < 2)
 	{
@@ -13,7 +13,7 @@ void UDollarGestureRecognizer::AddGesture(const FString& GestureName, const TArr
 
 	FGestureTemplate NewTemplate;
 	NewTemplate.Name = GestureName;
-	NewTemplate.Points = Normalize(RawPoints);
+	NewTemplate.Points = Normalize(RawPoints, bApplyIndicativeRotation);
 	Templates.Add(NewTemplate);
 }
 
@@ -63,16 +63,16 @@ FGestureResult UDollarGestureRecognizer::RecognizeGesture(const TArray<FVector2D
 	return Result;
 }
 
-float UDollarGestureRecognizer::ScoreAgainstTemplate(const TArray<FVector2D>& RawPoints, const FString& TemplateName) const
+float UDollarGestureRecognizer::ScoreAgainstTemplate(const TArray<FVector2D>& RawPoints, const FString& TemplateName, float MaxRotationDegrees, bool bApplyIndicativeRotation) const
 {
 	if (RawPoints.Num() < 2)
 	{
 		return 0.0f;
 	}
 
-	const TArray<FVector2D> Candidate = Normalize(RawPoints);
+	const TArray<FVector2D> Candidate = Normalize(RawPoints, bApplyIndicativeRotation);
 
-	const float ThetaA = FMath::DegreesToRadians(AngleSearchRange);
+	const float ThetaA = FMath::DegreesToRadians(MaxRotationDegrees);
 	const float ThetaDelta = FMath::DegreesToRadians(AngleSearchPrecision);
 	const float HalfDiagonal = 0.5f * FMath::Sqrt(SquareSize * SquareSize + SquareSize * SquareSize);
 
@@ -95,7 +95,6 @@ float UDollarGestureRecognizer::ScoreAgainstTemplate(const TArray<FVector2D>& Ra
 	return bFoundAny ? BestScore : 0.0f;
 }
 
-
 TArray<FVector2D> UDollarGestureRecognizer::ProjectStrokeToViewPlane(const TArray<FVector>& WorldPoints, const FVector& ViewLocation, const FVector& ViewForward, const FVector& ViewRight, const FVector& ViewUp)
 {
 	TArray<FVector2D> Projected;
@@ -114,11 +113,20 @@ TArray<FVector2D> UDollarGestureRecognizer::ProjectStrokeToViewPlane(const TArra
 
 // ---------- Preprocessing pipeline ----------
 
-TArray<FVector2D> UDollarGestureRecognizer::Normalize(const TArray<FVector2D>& RawPoints)
+TArray<FVector2D> UDollarGestureRecognizer::Normalize(const TArray<FVector2D>& RawPoints, bool bApplyIndicativeRotation)
 {
 	TArray<FVector2D> Points = Resample(RawPoints, NumResamplePoints);
-	const float Radians = IndicativeAngle(Points);
-	Points = RotateBy(Points, -Radians);
+
+	if (bApplyIndicativeRotation)
+	{
+		const float Radians = IndicativeAngle(Points);
+		Points = RotateBy(Points, -Radians);
+	}
+	// When false, the stroke keeps whatever absolute orientation it was
+	// actually drawn in - only scale and position get normalized. This
+	// makes rotation genuinely matter for matching, instead of being
+	// erased before comparison even starts.
+
 	Points = ScaleToSquare(Points, SquareSize);
 	Points = TranslateToOrigin(Points);
 	return Points;

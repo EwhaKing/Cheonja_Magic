@@ -2,7 +2,7 @@
 // Unreal Engine 5 C++ port of the $1 Unistroke Recognizer
 // Original algorithm: Wobbrock, J.O., Wilson, A.D. and Li, Y. (2007)
 // "Gestures without libraries, toolkits or training: A $1 recognizer for user interface prototypes"
-// This is a from scratch reimplementation of the published algorithm no external
+// This is a from-scratch reimplementation of the published algorithm - no external
 // libraries or plugins required, just stock Unreal/Engine types.
 
 #pragma once
@@ -61,7 +61,7 @@ class UDollarGestureRecognizer : public UObject
 public:
 	/** Registers a new template gesture (e.g. "Fireball" = a circle shape). */
 	UFUNCTION(BlueprintCallable, Category = "Gesture Recognition")
-	void AddGesture(const FString& GestureName, const TArray<FVector2D>& RawPoints);
+	void AddGesture(const FString& GestureName, const TArray<FVector2D>& RawPoints, bool bApplyIndicativeRotation = true);
 
 	/** Removes all stored templates for a given name. Useful for re-teaching a shape. */
 	UFUNCTION(BlueprintCallable, Category = "Gesture Recognition")
@@ -77,8 +77,18 @@ public:
 	 * MinScoreThreshold.
 	 */
 	UFUNCTION(BlueprintCallable, Category = "Gesture Recognition")
-	float ScoreAgainstTemplate(const TArray<FVector2D>& RawPoints, const FString& TemplateName) const;
 	FGestureResult RecognizeGesture(const TArray<FVector2D>& RawPoints, float MinScoreThreshold = 0.75f);
+
+	/**
+	 * Scores a drawn stroke against ONE specific named template only,
+	 * ignoring all others. Use this when order/identity matters (e.g. a
+	 * multi-stroke character where stroke 2 must specifically match
+	 * "Water_Stroke1", not just "whatever looks closest"). If multiple
+	 * templates share TemplateName, the best-scoring one among them is used.
+	 * Returns 0.0 if the template name isn't found.
+	 */
+	UFUNCTION(BlueprintCallable, Category = "Gesture Recognition")
+	float ScoreAgainstTemplate(const TArray<FVector2D>& RawPoints, const FString& TemplateName, float MaxRotationDegrees = 45.0f, bool bApplyIndicativeRotation = true) const;
 
 	/**
 	 * Helper for VR: projects a 3D world-space stroke (captured from a
@@ -102,7 +112,7 @@ private:
 	static TArray<FVector2D> RotateBy(const TArray<FVector2D>& Points, float Radians);
 	static TArray<FVector2D> ScaleToSquare(const TArray<FVector2D>& Points, float Size);
 	static TArray<FVector2D> TranslateToOrigin(const TArray<FVector2D>& Points);
-	static TArray<FVector2D> Normalize(const TArray<FVector2D>& RawPoints);
+	static TArray<FVector2D> Normalize(const TArray<FVector2D>& RawPoints, bool bApplyIndicativeRotation = true);
 
 	static float PathDistance(const TArray<FVector2D>& PointsA, const TArray<FVector2D>& PointsB);
 	static float DistanceAtAngle(const TArray<FVector2D>& Points, const TArray<FVector2D>& Template, float Radians);
@@ -110,6 +120,6 @@ private:
 
 	static constexpr int32 NumResamplePoints = 64;
 	static constexpr float SquareSize = 250.0f;
-	static constexpr float AngleSearchRange = 10.0f;  // degrees, +/-
+	static constexpr float AngleSearchRange = 45.0f;  // degrees, +/-
 	static constexpr float AngleSearchPrecision = 2.0f; // degrees
 };
