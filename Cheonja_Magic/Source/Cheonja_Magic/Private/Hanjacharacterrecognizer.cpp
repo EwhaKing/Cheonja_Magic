@@ -164,7 +164,7 @@ void UHanjaCharacterRecognizer::BuildWaterStrokeTemplates()
 	Stroke2.Add(FVector2D(75.5, 63.1));
 	Stroke2.Add(FVector2D(82.1, 66.1));
 	Stroke2.Add(FVector2D(85.0, 66.5));
-	StrokeMatcher->AddGesture(TEXT("Water_Stroke2"), Stroke2, false);
+	StrokeMatcher->AddGesture(TEXT("Water_Stroke2"), Stroke2);
 
 	// Stroke 3: short diagonal sweeping up to the right.
 	TArray<FVector2D> Stroke3;
@@ -172,5 +172,5 @@ void UHanjaCharacterRecognizer::BuildWaterStrokeTemplates()
 	Stroke3.Add(FVector2D(71.5, 24.2));
 	Stroke3.Add(FVector2D(73.3, 21.7));
 	Stroke3.Add(FVector2D(73.4, 20.6));
-	StrokeMatcher->AddGesture(TEXT("Water_Stroke3"), Stroke3, false);
+	StrokeMatcher->AddGesture(TEXT("Water_Stroke3"), Stroke3);
 }
